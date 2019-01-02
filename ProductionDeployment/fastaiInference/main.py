@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from flask_cors import CORS, cross_origin
 from flask import Response
 
@@ -151,10 +151,13 @@ def encode(img):
     pil_img.save(buff, format="JPEG")
     return base64.b64encode(buff.getvalue()).decode("utf-8")
 
-@app.route('/bears/inference',methods=['GET'])
+@app.route('/bears/inference',methods=['POST'])
 def bearsInference():
-     
-    img=open_image(bearspath + '/models/00000014.jpg')
+
+    fp = request.files['file']
+    img=open_image(fp)
+
+    #img=open_image(bearspath + '/models/00000014.jpg')
 
     pred_class,pred_idx,outputs = _bearslearn.predict(img)
     img_data = encode(img)
@@ -162,7 +165,7 @@ def bearsInference():
     body = { 'label': str(pred_class), 'image': img_data }
     
     resp= Response(response=json.dumps({"response": body}), status=200, mimetype='application/json')
-
+    #print (str(pred_class))
     return resp
 
 
