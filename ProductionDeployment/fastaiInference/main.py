@@ -4,6 +4,7 @@ from flask import Response
 
 import json
 from fastai.vision.image import open_image, image2np
+from fastai.vision import rotate
 from PIL import Image as PILImage
 import base64
 from io import BytesIO
@@ -23,8 +24,11 @@ CORS(app)
 
 HERE = os.path.dirname(os.path.realpath(__file__))
 
-bearspath=os.path.join(HERE, "tmp/bears")
-classes = ['black', 'grizzly', 'teddys']
+#bearspath=os.path.join(HERE, "tmp/bears")
+#classes = ['black', 'grizzly', 'teddys']
+
+bearspath=os.path.join(HERE, "tmp/KDEF")
+classes = ['afraid', 'angry', 'disgusted', 'happy', 'neutral', 'sad', 'surprised']
 
 _bearslearn = create_cnn(ImageDataBunch.single_from_classes(bearspath, classes, tfms=get_transforms(), size=224).normalize(imagenet_stats), models.resnet34)
 _bearslearn.load('stage-2')
@@ -156,7 +160,7 @@ def bearsInference():
 
     fp = request.files['file']
     img=open_image(fp)
-
+    rotate(img,270)
     #img=open_image(bearspath + '/models/00000014.jpg')
 
     pred_class,pred_idx,outputs = _bearslearn.predict(img)

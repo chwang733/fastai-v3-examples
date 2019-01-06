@@ -1,4 +1,7 @@
 from flask import Flask, render_template, request, json, jsonify
+from flask_cors import CORS, cross_origin
+from flask import Response
+
 from fastai.vision.image import open_image, image2np
 from PIL import Image as PILImage
 import base64
@@ -9,6 +12,7 @@ from fastai.vision import *
 
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route("/ping")
 def hello(): 
