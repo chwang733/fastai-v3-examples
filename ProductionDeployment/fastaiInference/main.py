@@ -19,6 +19,8 @@ from pytorch_models import awd_lstm
 from fastai.vision import ImageDataBunch,create_cnn,models, get_transforms
 from fastai.vision.data import imagenet_stats
 
+from PIL import Image, ExifTags
+
 app = Flask(__name__)
 CORS(app)
 
@@ -159,9 +161,32 @@ def encode(img):
 def bearsInference():
 
     fp = request.files['file']
-    img=open_image(fp)
-    rotate(img,270)
+
     #img=open_image(bearspath + '/models/00000014.jpg')
+
+    # Read EXIF data 
+    exifData={}
+    imgTemp=Image.open(fp)
+    exifDataRaw=imgTemp._getexif()
+    for orientation in ExifTags.TAGS.keys():
+        if ExifTags.TAGS[orientation]=='Orientation':
+            break
+    exif=dict(exifDataRaw.items())
+
+    print(exif[orientation])    
+ 
+    img=open_image(fp)
+    angle=0
+
+    if exif[orientation] == 3:
+        angle=180
+    elif  exif[orientation] == 6:
+        angle=270
+    elif  exif[orientation] == 8:
+        angle=90
+
+    rotate(img,angle)
+
 
     pred_class,pred_idx,outputs = _bearslearn.predict(img)
     img_data = encode(img)
