@@ -26,14 +26,6 @@ CORS(app)
 
 HERE = os.path.dirname(os.path.realpath(__file__))
 
-#bearspath=os.path.join(HERE, "tmp/bears")
-#classes = ['black', 'grizzly', 'teddys']
-
-bearspath=os.path.join(HERE, "tmp/KDEF")
-classes = ['afraid', 'angry', 'disgusted', 'happy', 'neutral', 'sad', 'surprised']
-
-_bearslearn = create_cnn(ImageDataBunch.single_from_classes(bearspath, classes, tfms=get_transforms(), size=224).normalize(imagenet_stats), models.resnet34)
-_bearslearn.load('stage-2')
 
 '''
 if os.path.isfile(path + '/models/00000014.jpg') != True:
@@ -160,8 +152,25 @@ def encode(img):
 @app.route('/bears/inference',methods=['POST'])
 def bearsInference():
 
-    fp = request.files['file']
+    #Get querystring to figure out which model to load
+    ic=request.args.get('imageclassifier')
+    print(ic)
 
+    classes=[]    
+    path=None
+
+    if ic=='KDEF':
+        path=os.path.join(HERE, "tmp/KDEF")
+        classes = ['afraid', 'angry', 'disgusted', 'happy', 'neutral', 'sad', 'surprised']
+    elif ic=='teddys':    
+        path=os.path.join(HERE, "tmp/bears")
+        classes = ['black', 'grizzly', 'teddys']
+
+
+    learn = create_cnn(ImageDataBunch.single_from_classes(path, classes, tfms=get_transforms(), size=224).normalize(imagenet_stats), models.resnet34)
+    learn.load('stage-2')
+
+    fp = request.files['file']
     #img=open_image(bearspath + '/models/00000014.jpg')
 
     # Read EXIF data 
@@ -188,7 +197,7 @@ def bearsInference():
     rotate(img,angle)
 
 
-    pred_class,pred_idx,outputs = _bearslearn.predict(img)
+    pred_class,pred_idx,outputs = learn.predict(img)
     img_data = encode(img)
 
     body = { 'label': str(pred_class), 'image': img_data }
