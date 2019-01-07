@@ -168,22 +168,22 @@ def bearsInference():
     exifData={}
     imgTemp=Image.open(fp)
     exifDataRaw=imgTemp._getexif()
-    for orientation in ExifTags.TAGS.keys():
-        if ExifTags.TAGS[orientation]=='Orientation':
-            break
-    exif=dict(exifDataRaw.items())
-
-    print(exif[orientation])    
- 
-    img=open_image(fp)
     angle=0
+    if not exifDataRaw==None:
+        for orientation in ExifTags.TAGS.keys():
+            if ExifTags.TAGS[orientation]=='Orientation':
+                break
+        exif=dict(exifDataRaw.items())
+#        print(exif[orientation])    
 
-    if exif[orientation] == 3:
-        angle=180
-    elif  exif[orientation] == 6:
-        angle=270
-    elif  exif[orientation] == 8:
-        angle=90
+        if exif[orientation] == 3:
+            angle=180
+        elif  exif[orientation] == 6:
+            angle=270
+        elif  exif[orientation] == 8:
+            angle=90
+
+    img=open_image(fp)
 
     rotate(img,angle)
 
